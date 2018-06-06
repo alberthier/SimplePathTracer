@@ -5,7 +5,7 @@
     "scene": {
         "camera": { "x": 0.0,  "y": 1.0, "z": 2.0, "ax": 0.0, "ay": 0.0, "az": 0.0 },
         "objects": [
-            { "type": "sphere", "x": 10.0,  "y": 11.0, "z": 12.0, "radius": 5.0, "material": "plastic1" }
+            { "type": "sphere", "x": 0.0,  "y": 0.0, "z": -2.0, "radius": 1.0, "material": "plastic1" }
         ]
     }
 }
