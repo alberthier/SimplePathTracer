@@ -45,6 +45,10 @@ func (self *Vector3) Cross(other *Vector3) *Vector3 {
 		self.X*other.Y - self.Y*other.X}
 }
 
-func (self *Vector3) Length(other *Vector3) float32 {
+func (self *Vector3) Length() float32 {
 	return float32(math.Sqrt(float64(self.X*self.X + self.Y*self.Y + self.Z*self.Z)))
+}
+
+func (self *Vector3) Unit() *Vector3 {
+	return self.Scale(1.0 / self.Length())
 }
