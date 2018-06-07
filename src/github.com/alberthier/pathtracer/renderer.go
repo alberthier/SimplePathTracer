@@ -2,6 +2,7 @@ package pathtracer
 
 import (
 	"image"
+	"math"
 )
 
 // ===================== Color
@@ -76,14 +77,20 @@ func (self *Renderer) Render(world *World) image.Image {
 			u := float32(i) / fwidth
 			v := float32(j) / fheight
 			ray.Direction = lowerLeftCorner.Add(hSize.Scale(u)).Add(vSize.Scale(v))
-			var color *Color
+			record := HitRecord{}
+			tmax := float32(math.MaxFloat32)
+			hitSomething := false
 			for _, obj := range world.Scene.Objects {
-				color = obj.Color(&ray)
-				if color != nil {
-					break
+				hit := obj.HitBy(&ray, float32(0.0), tmax, &record)
+				if hit {
+					hitSomething = true
+					tmax = record.t
 				}
 			}
-			if color == nil {
+			var color *Color
+			if hitSomething {
+				color = record.object.Color(&record)
+			} else {
 				color = self.background(&ray)
 			}
 			img.Set(i, self.height-j-1, color)
