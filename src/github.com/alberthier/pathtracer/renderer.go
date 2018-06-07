@@ -77,18 +77,16 @@ func (self *Renderer) Render(world *World) image.Image {
 			v := float32(j) / fheight
 			ray.Direction = lowerLeftCorner.Add(hSize.Scale(u)).Add(vSize.Scale(v))
 			var color *Color
-			hit := false
 			for _, obj := range world.Scene.Objects {
-				hit = obj.HitBy(&ray)
-				if hit {
-					color = NewColor(1.0, 0.0, 0.0)
+				color = obj.Color(&ray)
+				if color != nil {
 					break
 				}
 			}
-			if !hit {
+			if color == nil {
 				color = self.background(&ray)
 			}
-			img.Set(i, self.height-j, color)
+			img.Set(i, self.height-j-1, color)
 		}
 	}
 
