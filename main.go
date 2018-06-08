@@ -25,7 +25,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	renderer := pathtracer.NewRenderer(320, 200)
+	renderer := pathtracer.NewRenderer(320, 200, 100)
 	img := renderer.Render(world)
 	output, _ := os.Create("output.png")
 	png.Encode(output, img)
