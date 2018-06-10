@@ -37,6 +37,12 @@ func (self *Color) DivideAll(val float32) {
 	self.B /= val
 }
 
+func (self *Color) GammaCorrect() {
+	self.R = float32(math.Sqrt(float64(self.R)))
+	self.G = float32(math.Sqrt(float64(self.G)))
+	self.B = float32(math.Sqrt(float64(self.B)))
+}
+
 // ===================== Ray
 
 type Ray struct {
@@ -72,6 +78,32 @@ func (self *Renderer) background(ray *Ray) *Color {
 		(1-t)+t*1.0)
 }
 
+func (self *Renderer) Color(ray *Ray, world *World, depth int) *Color {
+	record := HitRecord{}
+	tmax := float32(math.MaxFloat32)
+	hitSomething := false
+	for _, obj := range world.Scene.Objects {
+		hit := obj.HitBy(ray, float32(0.0), tmax, &record)
+		if hit {
+			hitSomething = true
+			tmax = record.t
+		}
+	}
+	if hitSomething {
+		if depth < 50 {
+			attenuation, scattered := record.object.GetMaterial().Scatter(ray, &record)
+			color := self.Color(scattered, world, depth+1)
+			return NewColor(attenuation.X*color.R,
+				attenuation.Y*color.G,
+				attenuation.Z*color.B)
+		} else {
+			return NewColor(0.0, 0.0, 0.0)
+		}
+	} else {
+		return self.background(ray)
+	}
+}
+
 func (self *Renderer) Render(world *World) image.Image {
 	img := image.NewRGBA(image.Rect(0, 0, self.width, self.height))
 
@@ -88,31 +120,16 @@ func (self *Renderer) Render(world *World) image.Image {
 
 	for j := self.height - 1; j >= 0; j-- {
 		for i := 0; i < self.width; i++ {
-			finalColor := NewColor(0.0, 0.0, 0.0)
+			color := NewColor(0.0, 0.0, 0.0)
 			for s := 0; s < self.samplesPerPx; s++ {
 				u := (float32(i) + rand.Float32()) / fwidth
 				v := (float32(j) + rand.Float32()) / fheight
 				ray.Direction = lowerLeftCorner.Add(hSize.Scale(u)).Add(vSize.Scale(v))
-				record := HitRecord{}
-				tmax := float32(math.MaxFloat32)
-				hitSomething := false
-				for _, obj := range world.Scene.Objects {
-					hit := obj.HitBy(&ray, float32(0.0), tmax, &record)
-					if hit {
-						hitSomething = true
-						tmax = record.t
-					}
-				}
-				var color *Color
-				if hitSomething {
-					color = record.object.Color(&record)
-				} else {
-					color = self.background(&ray)
-				}
-				finalColor.AddFrom(color)
+				color.AddFrom(self.Color(&ray, world, 0))
 			}
-			finalColor.DivideAll(float32(self.samplesPerPx))
-			img.Set(i, self.height-j-1, finalColor)
+			color.DivideAll(float32(self.samplesPerPx))
+			color.GammaCorrect()
+			img.Set(i, self.height-j-1, color)
 		}
 	}
 

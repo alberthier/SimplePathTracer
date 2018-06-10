@@ -8,7 +8,7 @@ import (
 )
 
 type World struct {
-	Materials map[string]*Material
+	Materials map[string]Material
 	Scene     struct {
 		Camera  *Camera
 		Objects []SceneObject
@@ -63,7 +63,7 @@ func (self *World) Load(filename string) error {
 		worldFile.Scene.Camera.AngleY,
 		worldFile.Scene.Camera.AngleZ)
 
-	self.Materials = make(map[string]*Material)
+	self.Materials = make(map[string]Material)
 	for _, matData := range worldFile.Materials {
 		self.Materials[matData.Name] = NewMaterial(matData.Type)
 	}

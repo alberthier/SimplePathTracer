@@ -11,7 +11,7 @@ type HitRecord struct {
 
 type SceneObject interface {
 	HitBy(ray *Ray, tmin float32, tmax float32, record *HitRecord) bool
-	Color(record *HitRecord) *Color
+	GetMaterial() Material
 }
 
 type ObjectBase struct {
@@ -21,10 +21,10 @@ type ObjectBase struct {
 type Sphere struct {
 	ObjectBase
 	Radius   float32
-	Material *Material
+	Material Material
 }
 
-func NewSphere(x float32, y float32, z float32, radius float32, material *Material) *Sphere {
+func NewSphere(x float32, y float32, z float32, radius float32, material Material) *Sphere {
 	return &Sphere{
 		ObjectBase{Vector3{x, y, z}},
 		radius, material}
@@ -55,6 +55,6 @@ func (self *Sphere) HitBy(ray *Ray, tmin float32, tmax float32, record *HitRecor
 	return false
 }
 
-func (self *Sphere) Color(record *HitRecord) *Color {
-	return NewColor((record.normal.X+1.0)/2.0, (record.normal.Y+1.0)/2.0, (record.normal.Z+1.0)/2.0)
+func (self *Sphere) GetMaterial() Material {
+	return self.Material
 }
