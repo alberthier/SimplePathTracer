@@ -21,10 +21,9 @@ func NewWorld() *World {
 
 type WorldFile struct {
 	Materials []struct {
-		Name    string  `json:"name"`
-		Type    string  `json:"type"`
-		Diffuse float32 `json:"diffuse"`
-		Scatter float32 `json:"scatter"`
+		Name    string     `json:"name"`
+		Type    string     `json:"type"`
+		Diffuse [3]float32 `json:"diffuse"`
 	} `json:"materials"`
 	Scene struct {
 		Camera struct {
@@ -65,7 +64,7 @@ func (self *World) Load(filename string) error {
 
 	self.Materials = make(map[string]Material)
 	for _, matData := range worldFile.Materials {
-		self.Materials[matData.Name] = NewMaterial(matData.Type)
+		self.Materials[matData.Name] = NewMaterial(matData.Type, matData.Diffuse)
 	}
 
 	for _, objData := range worldFile.Scene.Objects {

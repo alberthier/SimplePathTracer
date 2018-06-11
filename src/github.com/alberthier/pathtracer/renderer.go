@@ -83,7 +83,7 @@ func (self *Renderer) Color(ray *Ray, world *World, depth int) *Color {
 	tmax := float32(math.MaxFloat32)
 	hitSomething := false
 	for _, obj := range world.Scene.Objects {
-		hit := obj.HitBy(ray, float32(0.0), tmax, &record)
+		hit := obj.HitBy(ray, float32(0.0001), tmax, &record)
 		if hit {
 			hitSomething = true
 			tmax = record.t
@@ -92,13 +92,14 @@ func (self *Renderer) Color(ray *Ray, world *World, depth int) *Color {
 	if hitSomething {
 		if depth < 50 {
 			attenuation, scattered := record.object.GetMaterial().Scatter(ray, &record)
-			color := self.Color(scattered, world, depth+1)
-			return NewColor(attenuation.X*color.R,
-				attenuation.Y*color.G,
-				attenuation.Z*color.B)
-		} else {
-			return NewColor(0.0, 0.0, 0.0)
+			if attenuation != nil && scattered != nil {
+				color := self.Color(scattered, world, depth+1)
+				return NewColor(attenuation.X*color.R,
+					attenuation.Y*color.G,
+					attenuation.Z*color.B)
+			}
 		}
+		return NewColor(0.0, 0.0, 0.0)
 	} else {
 		return self.background(ray)
 	}
