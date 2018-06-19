@@ -10,8 +10,8 @@ type Vector3 struct {
 	Z float32
 }
 
-var vector000 = NewVector(0.0, 0.0, 0.0)
-var vector111 = NewVector(1.0, 1.0, 1.0)
+var NullVector = NewVector(0.0, 0.0, 0.0)
+var UnitVector = NewVector(1.0, 1.0, 1.0)
 
 func NewVector(x float32, y float32, z float32) *Vector3 {
 	return &Vector3{x, y, z}

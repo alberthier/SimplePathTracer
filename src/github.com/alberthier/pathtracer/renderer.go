@@ -83,7 +83,7 @@ func (self *Renderer) Color(ray *Ray, world *World, depth int) *Color {
 	tmax := float32(math.MaxFloat32)
 	hitSomething := false
 	for _, obj := range world.Scene.Objects {
-		hit := obj.HitBy(ray, float32(0.0001), tmax, &record)
+		hit := obj.HitBy(ray, float32(0.001), tmax, &record)
 		if hit {
 			hitSomething = true
 			tmax = record.t
@@ -110,11 +110,9 @@ func (self *Renderer) Render(world *World) image.Image {
 
 	fwidth := float32(self.width)
 	fheight := float32(self.height)
-	uw := fwidth / 100.0
-	uh := fheight / 100.0
-	lowerLeftCorner := NewVector(-uw, -uh, -1.0)
-	hSize := NewVector(2.0*uw, 0.0, 0.0)
-	vSize := NewVector(0.0, 2.0*uh, 0.0)
+	lowerLeftCorner := NewVector(-2.0, -1.0, -1.0)
+	hSize := NewVector(4.0, 0.0, 0.0)
+	vSize := NewVector(0.0, 2.0, 0.0)
 
 	ray := Ray{}
 	ray.Origin = NewVector(0.0, 0.0, 0.0)
@@ -125,7 +123,7 @@ func (self *Renderer) Render(world *World) image.Image {
 			for s := 0; s < self.samplesPerPx; s++ {
 				u := (float32(i) + rand.Float32()) / fwidth
 				v := (float32(j) + rand.Float32()) / fheight
-				ray.Direction = lowerLeftCorner.Add(hSize.Scale(u)).Add(vSize.Scale(v))
+				ray.Direction = lowerLeftCorner.Add(hSize.Scale(u)).Add(vSize.Scale(v)).Substract(ray.Origin)
 				color.AddFrom(self.Color(&ray, world, 0))
 			}
 			color.DivideAll(float32(self.samplesPerPx))
