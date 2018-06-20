@@ -24,7 +24,7 @@ func NewMaterial(tp string, diffuse [3]float64, param float64) Material {
 func randomVectorInUnitSphere() *Vector3 {
 	for {
 		r := NewVector(rand.Float64(), rand.Float64(), rand.Float64())
-		p := r.Scale(2.0).Substract(UnitVector)
+		p := r.Scale(2.0).Subtract(UnitVector)
 		if p.SquaredLength() >= 1.0 {
 			return p
 		}
@@ -32,7 +32,7 @@ func randomVectorInUnitSphere() *Vector3 {
 }
 
 func reflect(v *Vector3, n *Vector3) *Vector3 {
-	return v.Substract(n.Scale(2.0 * v.Dot(n)))
+	return v.Subtract(n.Scale(2.0 * v.Dot(n)))
 }
 
 func refract(v *Vector3, n *Vector3, niOverNt float64) *Vector3 {
@@ -41,7 +41,7 @@ func refract(v *Vector3, n *Vector3, niOverNt float64) *Vector3 {
 	disc := 1.0 - niOverNt*niOverNt*(1.0-dot*dot)
 	if disc > 0 {
 		sqrtDisc := math.Sqrt(disc)
-		return uv.Substract(n.Scale(dot)).Scale(niOverNt).Substract(n.Scale(sqrtDisc))
+		return uv.Subtract(n.Scale(dot)).Scale(niOverNt).Subtract(n.Scale(sqrtDisc))
 	}
 	return nil
 }
@@ -55,7 +55,7 @@ type LambertMaterial struct {
 func (self *LambertMaterial) Scatter(ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray) {
 	rnd := randomVectorInUnitSphere()
 	target := record.point.Add(record.normal).Add(rnd)
-	scattered = NewRay(record.point, target.Substract(record.point))
+	scattered = NewRay(record.point, target.Subtract(record.point))
 	return &self.albedo, scattered
 }
 

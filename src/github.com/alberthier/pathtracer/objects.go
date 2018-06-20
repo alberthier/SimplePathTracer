@@ -31,7 +31,7 @@ func NewSphere(x float64, y float64, z float64, radius float64, material Materia
 }
 
 func (self *Sphere) HitBy(ray *Ray, tmin float64, tmax float64, record *HitRecord) bool {
-	oc := ray.Origin.Substract(&self.Position)
+	oc := ray.Origin.Subtract(&self.Position)
 	a := ray.Direction.Dot(ray.Direction)
 	b := oc.Dot(ray.Direction)
 	c := oc.Dot(oc) - self.Radius*self.Radius
@@ -47,7 +47,7 @@ func (self *Sphere) HitBy(ray *Ray, tmin float64, tmax float64, record *HitRecor
 		}
 		record.t = t
 		record.point = ray.PointAt(t)
-		record.normal = record.point.Substract(&self.Position).Scale(1.0 / self.Radius)
+		record.normal = record.point.Subtract(&self.Position).Scale(1.0 / self.Radius)
 		record.object = self
 		return true
 	}

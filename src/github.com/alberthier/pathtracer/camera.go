@@ -16,13 +16,13 @@ func NewCamera(position *Vector3, lookAt *Vector3, up *Vector3, vertFov float64,
 	halfHeight := math.Tan(theta / 2.0)
 	halfWidth := aspectRatio * halfHeight
 
-	w := position.Substract(lookAt).Unit()
+	w := position.Subtract(lookAt).Unit()
 	u := up.Cross(w).Unit()
 	v := w.Cross(u)
 
 	self := &Camera{}
 	self.position = *position
-	self.lowerLeftCorner = *self.position.Substract(u.Scale(halfWidth)).Substract(v.Scale(halfHeight)).Substract(w)
+	self.lowerLeftCorner = *self.position.Subtract(u.Scale(halfWidth)).Subtract(v.Scale(halfHeight)).Subtract(w)
 	self.horizontal = *u.Scale(2.0 * halfWidth)
 	self.vertical = *v.Scale(2.0 * halfHeight)
 
@@ -31,5 +31,5 @@ func NewCamera(position *Vector3, lookAt *Vector3, up *Vector3, vertFov float64,
 
 func (self *Camera) GetRay(u float64, v float64) *Ray {
 	return NewRay(&self.position,
-		self.lowerLeftCorner.Add(self.horizontal.Scale(u)).Add(self.vertical.Scale(v)).Substract(&self.position))
+		self.lowerLeftCorner.Add(self.horizontal.Scale(u)).Add(self.vertical.Scale(v)).Subtract(&self.position))
 }

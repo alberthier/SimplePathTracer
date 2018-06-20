@@ -21,7 +21,7 @@ func (self *Vector3) Add(other *Vector3) *Vector3 {
 	return &Vector3{self.X + other.X, self.Y + other.Y, self.Z + other.Z}
 }
 
-func (self *Vector3) Substract(other *Vector3) *Vector3 {
+func (self *Vector3) Subtract(other *Vector3) *Vector3 {
 	return &Vector3{self.X - other.X, self.Y - other.Y, self.Z - other.Z}
 }
 
