@@ -110,12 +110,6 @@ func (self *Renderer) Render(world *World) image.Image {
 
 	fwidth := float64(self.width)
 	fheight := float64(self.height)
-	lowerLeftCorner := NewVector(-2.0, -1.0, -1.0)
-	hSize := NewVector(4.0, 0.0, 0.0)
-	vSize := NewVector(0.0, 2.0, 0.0)
-
-	ray := Ray{}
-	ray.Origin = NewVector(0.0, 0.0, 0.0)
 
 	for j := self.height - 1; j >= 0; j-- {
 		for i := 0; i < self.width; i++ {
@@ -123,8 +117,8 @@ func (self *Renderer) Render(world *World) image.Image {
 			for s := 0; s < self.samplesPerPx; s++ {
 				u := (float64(i) + rand.Float64()) / fwidth
 				v := (float64(j) + rand.Float64()) / fheight
-				ray.Direction = lowerLeftCorner.Add(hSize.Scale(u)).Add(vSize.Scale(v)).Substract(ray.Origin)
-				color.AddFrom(self.Color(&ray, world, 0))
+				ray := world.Scene.Camera.GetRay(u, v)
+				color.AddFrom(self.Color(ray, world, 0))
 			}
 			color.DivideAll(float64(self.samplesPerPx))
 			color.GammaCorrect()
