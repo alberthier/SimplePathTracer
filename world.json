@@ -8,10 +8,10 @@
         { "name": "glass", "type": "dielectric", "param": 1.5 }
     ],
     "scene": {
-        "camera": { "x": -2.0,  "y": 2.0, "z": 1.0,
+        "camera": { "x": 3.0,  "y": 3.0, "z": 2.0,
                     "tox": 0.0, "toy": 0.0, "toz": -1.0,
                     "upx": 0.0, "upy": 1.0, "upz": 0.0,
-                    "fov": 90 },
+                    "fov": 20, "aperture": 2.0 },
         "objects": [
             { "type": "sphere", "x": 0.0,  "y": 0.0, "z": -1.0, "radius": 0.5, "material": "mat1" },
             { "type": "sphere", "x": -1.0,  "y": 0.0, "z": -1.0, "radius": 0.5, "material": "glass" },
