@@ -23,24 +23,24 @@ type WorldFile struct {
 	Materials []struct {
 		Name    string     `json:"name"`
 		Type    string     `json:"type"`
-		Diffuse [3]float32 `json:"diffuse"`
-		Param   float32    `json:"param"`
+		Diffuse [3]float64 `json:"diffuse"`
+		Param   float64    `json:"param"`
 	} `json:"materials"`
 	Scene struct {
 		Camera struct {
-			X      float32 `json:"x"`
-			Y      float32 `json:"y"`
-			Z      float32 `json:"z"`
-			AngleX float32 `json:"ax"`
-			AngleY float32 `json:"ay"`
-			AngleZ float32 `json:"az"`
+			X      float64 `json:"x"`
+			Y      float64 `json:"y"`
+			Z      float64 `json:"z"`
+			AngleX float64 `json:"ax"`
+			AngleY float64 `json:"ay"`
+			AngleZ float64 `json:"az"`
 		} `json:"camera"`
 		Objects []struct {
 			Type     string  `json:"type"`
-			X        float32 `json:"x"`
-			Y        float32 `json:"y"`
-			Z        float32 `json:"z"`
-			Radius   float32 `json:"radius"`
+			X        float64 `json:"x"`
+			Y        float64 `json:"y"`
+			Z        float64 `json:"z"`
+			Radius   float64 `json:"radius"`
 			Material string  `json:"material"`
 		}
 	} `json:"scene"`

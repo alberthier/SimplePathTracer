@@ -3,14 +3,14 @@ package pathtracer
 import "math"
 
 type HitRecord struct {
-	t      float32
+	t      float64
 	point  *Vector3
 	normal *Vector3
 	object SceneObject
 }
 
 type SceneObject interface {
-	HitBy(ray *Ray, tmin float32, tmax float32, record *HitRecord) bool
+	HitBy(ray *Ray, tmin float64, tmax float64, record *HitRecord) bool
 	GetMaterial() Material
 }
 
@@ -20,24 +20,24 @@ type ObjectBase struct {
 
 type Sphere struct {
 	ObjectBase
-	Radius   float32
+	Radius   float64
 	Material Material
 }
 
-func NewSphere(x float32, y float32, z float32, radius float32, material Material) *Sphere {
+func NewSphere(x float64, y float64, z float64, radius float64, material Material) *Sphere {
 	return &Sphere{
 		ObjectBase{Vector3{x, y, z}},
 		radius, material}
 }
 
-func (self *Sphere) HitBy(ray *Ray, tmin float32, tmax float32, record *HitRecord) bool {
+func (self *Sphere) HitBy(ray *Ray, tmin float64, tmax float64, record *HitRecord) bool {
 	oc := ray.Origin.Substract(&self.Position)
 	a := ray.Direction.Dot(ray.Direction)
 	b := oc.Dot(ray.Direction)
 	c := oc.Dot(oc) - self.Radius*self.Radius
 	disc := b*b - a*c
 	if disc > 0 {
-		sd := float32(math.Sqrt(float64(disc)))
+		sd := math.Sqrt(disc)
 		t := (-b - sd) / a
 		if t <= tmin || tmax <= t {
 			t = (-b + sd) / a

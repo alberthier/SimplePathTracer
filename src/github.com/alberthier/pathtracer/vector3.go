@@ -5,15 +5,15 @@ import (
 )
 
 type Vector3 struct {
-	X float32
-	Y float32
-	Z float32
+	X float64
+	Y float64
+	Z float64
 }
 
 var NullVector = NewVector(0.0, 0.0, 0.0)
 var UnitVector = NewVector(1.0, 1.0, 1.0)
 
-func NewVector(x float32, y float32, z float32) *Vector3 {
+func NewVector(x float64, y float64, z float64) *Vector3 {
 	return &Vector3{x, y, z}
 }
 
@@ -33,11 +33,11 @@ func (self *Vector3) Divide(other *Vector3) *Vector3 {
 	return &Vector3{self.X / other.X, self.Y / other.Y, self.Z / other.Z}
 }
 
-func (self *Vector3) Scale(factor float32) *Vector3 {
+func (self *Vector3) Scale(factor float64) *Vector3 {
 	return &Vector3{self.X * factor, self.Y * factor, self.Z * factor}
 }
 
-func (self *Vector3) Dot(other *Vector3) float32 {
+func (self *Vector3) Dot(other *Vector3) float64 {
 	return self.X*other.X + self.Y*other.Y + self.Z*other.Z
 }
 
@@ -48,11 +48,11 @@ func (self *Vector3) Cross(other *Vector3) *Vector3 {
 		self.X*other.Y - self.Y*other.X}
 }
 
-func (self *Vector3) Length() float32 {
-	return float32(math.Sqrt(float64(self.SquaredLength())))
+func (self *Vector3) Length() float64 {
+	return math.Sqrt(self.SquaredLength())
 }
 
-func (self *Vector3) SquaredLength() float32 {
+func (self *Vector3) SquaredLength() float64 {
 	return self.X*self.X + self.Y*self.Y + self.Z*self.Z
 }
 
