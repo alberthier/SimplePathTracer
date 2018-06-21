@@ -28,6 +28,12 @@ func main() {
 		fmt.Println(err)
 	}
 
+	/*
+		f, _ := os.Create("cpuprofile")
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	*/
+
 	renderer := pathtracer.NewRenderer(width, height, samples)
 	img := renderer.Render(world)
 	output, _ := os.Create("output.png")
