@@ -6,7 +6,7 @@ import (
 )
 
 type Material interface {
-	Scatter(ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray)
+	Scatter(rng *rand.Rand, ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray)
 }
 
 func NewMaterial(tp string, diffuse [3]float64, param float64) Material {
@@ -21,9 +21,9 @@ func NewMaterial(tp string, diffuse [3]float64, param float64) Material {
 	return nil
 }
 
-func randomVectorInUnitSphere() *Vector3 {
+func randomVectorInUnitSphere(rng *rand.Rand) *Vector3 {
 	for {
-		r := NewVector(rand.Float64(), rand.Float64(), rand.Float64())
+		r := NewVector(rng.Float64(), rng.Float64(), rng.Float64())
 		p := r.Scale(2.0).Subtract(UnitVector)
 		if p.SquaredLength() >= 1.0 {
 			return p
@@ -52,8 +52,8 @@ type LambertMaterial struct {
 	albedo Vector3
 }
 
-func (self *LambertMaterial) Scatter(ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray) {
-	rnd := randomVectorInUnitSphere()
+func (self *LambertMaterial) Scatter(rng *rand.Rand, ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray) {
+	rnd := randomVectorInUnitSphere(rng)
 	target := record.point.Add(record.normal).Add(rnd)
 	scattered = NewRay(record.point, target.Subtract(record.point))
 	return &self.albedo, scattered
@@ -66,12 +66,12 @@ type MetalMaterial struct {
 	fuzziness float64
 }
 
-func (self *MetalMaterial) Scatter(ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray) {
+func (self *MetalMaterial) Scatter(rng *rand.Rand, ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray) {
 	reflected := reflect(ray.Direction, record.normal)
 	if reflected.Dot(record.normal) <= 0.0 {
 		return nil, nil
 	}
-	scattered = NewRay(record.point, reflected.Add(randomVectorInUnitSphere().Scale(self.fuzziness)))
+	scattered = NewRay(record.point, reflected.Add(randomVectorInUnitSphere(rng).Scale(self.fuzziness)))
 	return &self.albedo, scattered
 }
 
@@ -87,7 +87,7 @@ func schlick(cosine float64, refractiveIndex float64) float64 {
 	return r0 + (1-r0)*math.Pow((1.0-cosine), 5.0)
 }
 
-func (self *DielectricMaterial) Scatter(ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray) {
+func (self *DielectricMaterial) Scatter(rng *rand.Rand, ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray) {
 	var outNormal *Vector3
 	var niOverNt float64
 	var cosine float64
@@ -105,7 +105,7 @@ func (self *DielectricMaterial) Scatter(ray *Ray, record *HitRecord) (attenuatio
 
 	refracted := refract(ray.Direction, outNormal, niOverNt)
 	if refracted != nil {
-		if schlick(cosine, self.refractiveIndex) > rand.Float64() {
+		if schlick(cosine, self.refractiveIndex) > rng.Float64() {
 			refracted = nil
 		}
 	}

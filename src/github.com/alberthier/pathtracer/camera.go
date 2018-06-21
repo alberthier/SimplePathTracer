@@ -37,17 +37,17 @@ func NewCamera(position *Vector3, lookAt *Vector3, up *Vector3, vertFov float64,
 	return self
 }
 
-func randomVectorInUnitDisk() *Vector3 {
+func randomVectorInUnitDisk(rng *rand.Rand) *Vector3 {
 	for {
-		p := Vector3{2.0*rand.Float64() - 1.0, 2.0*rand.Float64() - 1.0, 0.0}
+		p := Vector3{2.0*rng.Float64() - 1.0, 2.0*rng.Float64() - 1.0, 0.0}
 		if p.Dot(&p) < 1.0 {
 			return &p
 		}
 	}
 }
 
-func (self *Camera) GetRay(s float64, t float64) *Ray {
-	rnd := randomVectorInUnitDisk().Scale(self.lensRadius)
+func (self *Camera) GetRay(rng *rand.Rand, s float64, t float64) *Ray {
+	rnd := randomVectorInUnitDisk(rng).Scale(self.lensRadius)
 	offset := self.u.Scale(rnd.X).Add(self.v.Scale(rnd.Y))
 	return NewRay(self.position.Add(offset),
 		self.lowerLeftCorner.Add(self.horizontal.Scale(s)).Add(self.vertical.Scale(t)).Subtract(&self.position).Subtract(offset))

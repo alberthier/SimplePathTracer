@@ -4,6 +4,8 @@ import (
 	"image"
 	"math"
 	"math/rand"
+	"runtime"
+	"time"
 )
 
 // ===================== Color
@@ -60,6 +62,12 @@ func (self *Ray) PointAt(t float64) *Vector3 {
 
 // ===================== Renderer
 
+type PixelColor struct {
+	X     int
+	Y     int
+	Color *Color
+}
+
 type Renderer struct {
 	width        int
 	height       int
@@ -78,7 +86,7 @@ func (self *Renderer) background(ray *Ray) *Color {
 		(1-t)+t*1.0)
 }
 
-func (self *Renderer) Color(ray *Ray, world *World, depth int) *Color {
+func (self *Renderer) Color(rng *rand.Rand, ray *Ray, world *World, depth int) *Color {
 	record := HitRecord{}
 	tmax := math.MaxFloat64
 	hitSomething := false
@@ -91,9 +99,9 @@ func (self *Renderer) Color(ray *Ray, world *World, depth int) *Color {
 	}
 	if hitSomething {
 		if depth < 50 {
-			attenuation, scattered := record.object.GetMaterial().Scatter(ray, &record)
+			attenuation, scattered := record.object.GetMaterial().Scatter(rng, ray, &record)
 			if attenuation != nil && scattered != nil {
-				color := self.Color(scattered, world, depth+1)
+				color := self.Color(rng, scattered, world, depth+1)
 				return NewColor(attenuation.X*color.R,
 					attenuation.Y*color.G,
 					attenuation.Z*color.B)
@@ -105,24 +113,50 @@ func (self *Renderer) Color(ray *Ray, world *World, depth int) *Color {
 	}
 }
 
-func (self *Renderer) Render(world *World) image.Image {
-	img := image.NewRGBA(image.Rect(0, 0, self.width, self.height))
-
+func (self *Renderer) renderLine(channel chan *PixelColor, world *World, line int) {
 	fwidth := float64(self.width)
 	fheight := float64(self.height)
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	for j := self.height - 1; j >= 0; j-- {
-		for i := 0; i < self.width; i++ {
-			color := NewColor(0.0, 0.0, 0.0)
-			for s := 0; s < self.samplesPerPx; s++ {
-				u := (float64(i) + rand.Float64()) / fwidth
-				v := (float64(j) + rand.Float64()) / fheight
-				ray := world.Scene.Camera.GetRay(u, v)
-				color.AddFrom(self.Color(ray, world, 0))
+	for i := 0; i < self.width; i++ {
+		color := NewColor(0.0, 0.0, 0.0)
+		for s := 0; s < self.samplesPerPx; s++ {
+			u := (float64(i) + rng.Float64()) / fwidth
+			v := (float64(line) + rng.Float64()) / fheight
+			ray := world.Scene.Camera.GetRay(rng, u, v)
+			color.AddFrom(self.Color(rng, ray, world, 0))
+		}
+		color.DivideAll(float64(self.samplesPerPx))
+		color.GammaCorrect()
+
+		channel <- &PixelColor{i, self.height - line - 1, color}
+	}
+	channel <- &PixelColor{0, 0, nil}
+}
+
+func (self *Renderer) Render(world *World) image.Image {
+	maxGoRoutines := runtime.NumCPU()
+	goRoutinesCount := 0
+
+	img := image.NewRGBA(image.Rect(0, 0, self.width, self.height))
+
+	channel := make(chan *PixelColor, 100)
+
+	line := 0
+	for line < self.height || goRoutinesCount != 0 {
+		for goRoutinesCount < maxGoRoutines && line < self.height {
+			go self.renderLine(channel, world, line)
+			goRoutinesCount++
+			line++
+		}
+		for {
+			pix := <-channel
+			if pix.Color != nil {
+				img.Set(pix.X, pix.Y, pix.Color)
+			} else {
+				goRoutinesCount--
+				break
 			}
-			color.DivideAll(float64(self.samplesPerPx))
-			color.GammaCorrect()
-			img.Set(i, self.height-j-1, color)
 		}
 	}
 
