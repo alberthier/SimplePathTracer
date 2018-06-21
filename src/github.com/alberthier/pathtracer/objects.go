@@ -12,29 +12,31 @@ type HitRecord struct {
 type SceneObject interface {
 	HitBy(ray *Ray, tmin float64, tmax float64, record *HitRecord) bool
 	GetMaterial() Material
+	Update(t float64)
 }
 
 type ObjectBase struct {
-	Position Vector3
+	Position AnimatedVector
 }
 
 type Sphere struct {
 	ObjectBase
-	Radius   float64
+	Radius   AnimatedValue
 	Material Material
 }
 
-func NewSphere(x float64, y float64, z float64, radius float64, material Material) *Sphere {
+func NewSphere(position AnimatedVector, radius AnimatedValue, material Material) *Sphere {
 	return &Sphere{
-		ObjectBase{Vector3{x, y, z}},
+		ObjectBase{position},
 		radius, material}
 }
 
 func (self *Sphere) HitBy(ray *Ray, tmin float64, tmax float64, record *HitRecord) bool {
-	oc := ray.Origin.Subtract(&self.Position)
+	oc := ray.Origin.Subtract(self.Position.Get())
 	a := ray.Direction.Dot(ray.Direction)
 	b := oc.Dot(ray.Direction)
-	c := oc.Dot(oc) - self.Radius*self.Radius
+	radius := self.Radius.Get()
+	c := oc.Dot(oc) - radius*radius
 	disc := b*b - a*c
 	if disc > 0 {
 		sd := math.Sqrt(disc)
@@ -47,7 +49,7 @@ func (self *Sphere) HitBy(ray *Ray, tmin float64, tmax float64, record *HitRecor
 		}
 		record.t = t
 		record.point = ray.PointAt(t)
-		record.normal = record.point.Subtract(&self.Position).Scale(1.0 / self.Radius)
+		record.normal = record.point.Subtract(self.Position.Get()).Scale(1.0 / radius)
 		record.object = self
 		return true
 	}
@@ -56,4 +58,9 @@ func (self *Sphere) HitBy(ray *Ray, tmin float64, tmax float64, record *HitRecor
 
 func (self *Sphere) GetMaterial() Material {
 	return self.Material
+}
+
+func (self *Sphere) Update(t float64) {
+	self.Position.Update(t)
+	self.Radius.Update(t)
 }

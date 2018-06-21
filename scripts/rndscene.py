@@ -19,14 +19,16 @@ materials=["ground",
    "glass",
    "diamond"]
 
-def makeball():
-    x = 10 - random.random() * 20.0
+def makeball(i, j):
+    x = i + random.random() - 0.5
     y = 0.5
-    z = 10 - random.random() * 20.0
+    z = j + random.random() - 0.5
     r = 0.5
     material = materials[random.randint(0, len(materials) - 1)]
-    print('{{ "type": "sphere", "x": {:.1f}, "y": {:.1f}, "z": {:.1f}, "radius": {:.1f}, "material": "{}" }},'.format(x, y, z, r, material))
+    print('{{ "type": "sphere", "position": {{ "x": {:.1f}, "y": {:.1f}, "z": {:.1f} }}, "radius": {{ "value": {:.1f} }}, "material": "{}" }},'.format(x, y, z, r, material))
 
-
-for i in range(100):
-    makeball()
+for i in range(-20, 21):
+    for j in range(-20, 21):
+        if i < -5 or i > 5 and j < -2 or j > 2:
+            if random.random() < 0.1:
+                makeball(i, j)

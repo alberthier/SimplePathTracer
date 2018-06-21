@@ -134,13 +134,15 @@ func (self *Renderer) renderLine(channel chan *PixelColor, world *World, line in
 	channel <- &PixelColor{0, 0, nil}
 }
 
-func (self *Renderer) Render(world *World) image.Image {
+func (self *Renderer) Render(world *World, t float64) image.Image {
 	maxGoRoutines := runtime.NumCPU()
 	goRoutinesCount := 0
 
 	img := image.NewRGBA(image.Rect(0, 0, self.width, self.height))
 
 	channel := make(chan *PixelColor, 100)
+
+	world.Update(t)
 
 	line := 0
 	for line < self.height || goRoutinesCount != 0 {

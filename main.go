@@ -35,8 +35,10 @@ func main() {
 	*/
 
 	renderer := pathtracer.NewRenderer(width, height, samples)
-	img := renderer.Render(world)
-	output, _ := os.Create("output.png")
-	png.Encode(output, img)
-	output.Close()
+	for t := 0; t < 100; t++ {
+		img := renderer.Render(world, float64(t))
+		output, _ := os.Create(fmt.Sprintf("output%03d.png", t))
+		png.Encode(output, img)
+		output.Close()
+	}
 }
