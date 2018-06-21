@@ -142,6 +142,8 @@ func (self *Renderer) Render(world *World) image.Image {
 
 	channel := make(chan *PixelColor, 100)
 
+	world.Scene.Camera.Update(0)
+
 	line := 0
 	for line < self.height || goRoutinesCount != 0 {
 		for goRoutinesCount < maxGoRoutines && line < self.height {

@@ -6,35 +6,53 @@ import (
 )
 
 type Camera struct {
-	position        Vector3
-	lowerLeftCorner Vector3
-	horizontal      Vector3
-	vertical        Vector3
+	position    AnimatedVector
+	lookAt      AnimatedVector
+	up          AnimatedVector
+	vertFov     AnimatedValue
+	aperture    AnimatedValue
+	aspectRatio float64
+
+	lowerLeftCorner *Vector3
+	horizontal      *Vector3
+	vertical        *Vector3
 	lensRadius      float64
-	u               Vector3
-	v               Vector3
-	w               Vector3
+	u               *Vector3
+	v               *Vector3
+	w               *Vector3
 }
 
-func NewCamera(position *Vector3, lookAt *Vector3, up *Vector3, vertFov float64, aspectRatio float64, aperture float64) *Camera {
-	theta := vertFov * math.Pi / 180.0
-	focusDistance := position.Subtract(lookAt).Length()
-	lHeight := math.Tan(theta/2.0) * focusDistance
-	lWidth := aspectRatio * lHeight
-
+func NewCamera(position AnimatedVector, lookAt AnimatedVector, up AnimatedVector, vertFov AnimatedValue, aspectRatio float64, aperture AnimatedValue) *Camera {
 	self := &Camera{}
-
-	self.w = *position.Subtract(lookAt).Unit()
-	self.u = *up.Cross(&self.w).Unit()
-	self.v = *self.w.Cross(&self.u)
-
-	self.lensRadius = aperture / 2.0
-	self.position = *position
-	self.lowerLeftCorner = *self.position.Subtract(self.u.Scale(lWidth)).Subtract(self.v.Scale(lHeight)).Subtract(self.w.Scale(focusDistance))
-	self.horizontal = *self.u.Scale(2.0 * lWidth)
-	self.vertical = *self.v.Scale(2.0 * lHeight)
-
+	self.position = position
+	self.lookAt = lookAt
+	self.up = up
+	self.vertFov = vertFov
+	self.aperture = aperture
+	self.aspectRatio = aspectRatio
 	return self
+}
+
+func (self *Camera) Update(t float64) {
+	self.position.Update(t)
+	self.lookAt.Update(t)
+	self.up.Update(t)
+	self.vertFov.Update(t)
+	self.aperture.Update(t)
+
+	theta := self.vertFov.Get() * math.Pi / 180.0
+	focusDistance := self.position.Get().Subtract(self.lookAt.Get()).Length()
+	lHeight := math.Tan(theta/2.0) * focusDistance
+	lWidth := self.aspectRatio * lHeight
+
+	self.w = self.position.Get().Subtract(self.lookAt.Get()).Unit()
+	self.u = self.up.Get().Cross(self.w).Unit()
+	self.v = self.w.Cross(self.u)
+
+	self.lensRadius = self.aperture.Get() / 2.0
+	self.lowerLeftCorner = self.position.Get().Subtract(self.u.Scale(lWidth)).Subtract(self.v.Scale(lHeight)).Subtract(self.w.Scale(focusDistance))
+	self.horizontal = self.u.Scale(2.0 * lWidth)
+	self.vertical = self.v.Scale(2.0 * lHeight)
 }
 
 func randomVectorInUnitDisk(rng *rand.Rand) *Vector3 {
@@ -49,6 +67,6 @@ func randomVectorInUnitDisk(rng *rand.Rand) *Vector3 {
 func (self *Camera) GetRay(rng *rand.Rand, s float64, t float64) *Ray {
 	rnd := randomVectorInUnitDisk(rng).Scale(self.lensRadius)
 	offset := self.u.Scale(rnd.X).Add(self.v.Scale(rnd.Y))
-	return NewRay(self.position.Add(offset),
-		self.lowerLeftCorner.Add(self.horizontal.Scale(s)).Add(self.vertical.Scale(t)).Subtract(&self.position).Subtract(offset))
+	return NewRay(self.position.Get().Add(offset),
+		self.lowerLeftCorner.Add(self.horizontal.Scale(s)).Add(self.vertical.Scale(t)).Subtract(self.position.Get()).Subtract(offset))
 }

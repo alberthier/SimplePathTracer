@@ -19,6 +19,18 @@ func NewWorld() *World {
 	return &World{}
 }
 
+type FileValue struct {
+	Value float64 `json:"value"`
+	Anim  string  `json:"anim"`
+}
+
+type FileVector struct {
+	X    float64 `json:"x"`
+	Y    float64 `json:"y"`
+	Z    float64 `json:"z"`
+	Anim string  `json:"anim"`
+}
+
 type WorldFile struct {
 	Materials []struct {
 		Name    string     `json:"name"`
@@ -28,27 +40,31 @@ type WorldFile struct {
 	} `json:"materials"`
 	Scene struct {
 		Camera struct {
-			X        float64 `json:"x"`
-			Y        float64 `json:"y"`
-			Z        float64 `json:"z"`
-			ToX      float64 `json:"tox"`
-			ToY      float64 `json:"toy"`
-			ToZ      float64 `json:"toz"`
-			UpX      float64 `json:"upx"`
-			UpY      float64 `json:"upy"`
-			UpZ      float64 `json:"upz"`
-			Fov      float64 `json:"fov"`
-			Aperture float64 `json:"aperture"`
+			Position FileVector `json:"position"`
+			LookAt   FileVector `json:"lookat"`
+			Up       FileVector `json:"up"`
+			Fov      FileValue  `json:"fov"`
+			Aperture FileValue  `json:"aperture"`
 		} `json:"camera"`
 		Objects []struct {
-			Type     string  `json:"type"`
-			X        float64 `json:"x"`
-			Y        float64 `json:"y"`
-			Z        float64 `json:"z"`
-			Radius   float64 `json:"radius"`
-			Material string  `json:"material"`
+			Type     string     `json:"type"`
+			Position FileVector `json:"position"`
+			Radius   FileValue  `json:"radius"`
+			Material string     `json:"material"`
 		}
 	} `json:"scene"`
+}
+
+func newAnimatedValue(v *FileValue) AnimatedValue {
+	if len(v.Anim) != 0 {
+	}
+	return NewFixedValue(v.Value)
+}
+
+func newAnimatedVector(v *FileVector) AnimatedVector {
+	if len(v.Anim) != 0 {
+	}
+	return NewFixedVector3(v.X, v.Y, v.Z)
 }
 
 func (self *World) Load(filename string, aspectRatio float64) error {
@@ -60,11 +76,12 @@ func (self *World) Load(filename string, aspectRatio float64) error {
 		return errors.New("Unable to parse JSON")
 	}
 
-	camPos := NewVector(worldFile.Scene.Camera.X, worldFile.Scene.Camera.Y, worldFile.Scene.Camera.Z)
-	camLookAt := NewVector(worldFile.Scene.Camera.ToX, worldFile.Scene.Camera.ToY, worldFile.Scene.Camera.ToZ)
-	camUp := NewVector(worldFile.Scene.Camera.UpX, worldFile.Scene.Camera.UpY, worldFile.Scene.Camera.UpZ)
-
-	self.Scene.Camera = NewCamera(camPos, camLookAt, camUp, worldFile.Scene.Camera.Fov, aspectRatio, worldFile.Scene.Camera.Aperture)
+	camPos := newAnimatedVector(&worldFile.Scene.Camera.Position)
+	camLookAt := newAnimatedVector(&worldFile.Scene.Camera.LookAt)
+	camUp := newAnimatedVector(&worldFile.Scene.Camera.Up)
+	camFov := newAnimatedValue(&worldFile.Scene.Camera.Fov)
+	camAperture := newAnimatedValue(&worldFile.Scene.Camera.Aperture)
+	self.Scene.Camera = NewCamera(camPos, camLookAt, camUp, camFov, aspectRatio, camAperture)
 
 	self.Materials = make(map[string]Material)
 	for _, matData := range worldFile.Materials {
@@ -75,7 +92,9 @@ func (self *World) Load(filename string, aspectRatio float64) error {
 		switch objData.Type {
 		case "sphere":
 			if material, ok := self.Materials[objData.Material]; ok {
-				sphere := NewSphere(objData.X, objData.Y, objData.Z, objData.Radius, material)
+				pos := newAnimatedVector(&objData.Position)
+				radius := newAnimatedValue(&objData.Radius)
+				sphere := NewSphere(pos, radius, material)
 				self.Scene.Objects = append(self.Scene.Objects, sphere)
 			} else {
 				fmt.Printf("Object material not found: '%s'", objData.Material)
