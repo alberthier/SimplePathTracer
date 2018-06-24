@@ -8,6 +8,7 @@ import (
 )
 
 type World struct {
+	Textures         map[string]Texture
 	Materials        map[string]Material
 	ValueAnimations  map[string]AnimatedValue
 	VectorAnimations map[string]AnimatedVector
@@ -34,11 +35,19 @@ type FileVector struct {
 }
 
 type WorldFile struct {
+	Textures []struct {
+		Type     string     `json:"type"`
+		Name     string     `json:"name"`
+		Color    [3]float64 `json:"color"`
+		Size     float64    `json:"size"`
+		Texture1 string     `json:"texture1"`
+		Texture2 string     `json:"texture2"`
+	} `json:"textures"`
 	Materials []struct {
-		Name    string     `json:"name"`
-		Type    string     `json:"type"`
-		Diffuse [3]float64 `json:"diffuse"`
-		Param   float64    `json:"param"`
+		Name    string  `json:"name"`
+		Type    string  `json:"type"`
+		Texture string  `json:"texture"`
+		Param   float64 `json:"param"`
 	} `json:"materials"`
 	Animations []struct {
 		Name   string  `json:"name"`
@@ -94,9 +103,14 @@ func (self *World) Load(filename string, aspectRatio float64) error {
 		return errors.New("Unable to parse JSON")
 	}
 
+	self.Textures = make(map[string]Texture)
+	for _, texData := range worldFile.Textures {
+		self.Textures[texData.Name] = NewTexture(texData.Type, texData.Color, texData.Size, texData.Texture1, texData.Texture2, &self.Textures)
+	}
 	self.Materials = make(map[string]Material)
 	for _, matData := range worldFile.Materials {
-		self.Materials[matData.Name] = NewMaterial(matData.Type, matData.Diffuse, matData.Param)
+		texture := self.Textures[matData.Texture]
+		self.Materials[matData.Name] = NewMaterial(matData.Type, texture, matData.Param)
 	}
 	self.VectorAnimations = make(map[string]AnimatedVector)
 	self.ValueAnimations = make(map[string]AnimatedValue)
@@ -125,7 +139,7 @@ func (self *World) Load(filename string, aspectRatio float64) error {
 				sphere := NewSphere(pos, radius, material)
 				self.Scene.Objects = append(self.Scene.Objects, sphere)
 			} else {
-				fmt.Printf("Object material not found: '%s'", objData.Material)
+				fmt.Printf("Object material not found: '%s'\n", objData.Material)
 			}
 			break
 		}

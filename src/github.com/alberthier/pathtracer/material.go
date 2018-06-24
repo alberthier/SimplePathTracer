@@ -6,15 +6,15 @@ import (
 )
 
 type Material interface {
-	Scatter(rng *rand.Rand, ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray)
+	Scatter(rng *rand.Rand, ray *Ray, record *HitRecord) (attenuation *Color, scattered *Ray)
 }
 
-func NewMaterial(tp string, diffuse [3]float64, param float64) Material {
+func NewMaterial(tp string, texture Texture, param float64) Material {
 	switch tp {
 	case "lambert":
-		return &LambertMaterial{Vector3{diffuse[0], diffuse[1], diffuse[2]}}
+		return &LambertMaterial{texture}
 	case "metal":
-		return &MetalMaterial{Vector3{diffuse[0], diffuse[1], diffuse[2]}, math.Min(param, 1.0)}
+		return &MetalMaterial{texture, math.Min(param, 1.0)}
 	case "dielectric":
 		return &DielectricMaterial{param}
 	}
@@ -49,30 +49,30 @@ func refract(v *Vector3, n *Vector3, niOverNt float64) *Vector3 {
 // Lambert =====================================================================
 
 type LambertMaterial struct {
-	albedo Vector3
+	albedo Texture
 }
 
-func (self *LambertMaterial) Scatter(rng *rand.Rand, ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray) {
+func (self *LambertMaterial) Scatter(rng *rand.Rand, ray *Ray, record *HitRecord) (attenuation *Color, scattered *Ray) {
 	rnd := randomVectorInUnitSphere(rng)
 	target := record.point.Add(record.normal).Add(rnd)
 	scattered = NewRay(record.point, target.Subtract(record.point))
-	return &self.albedo, scattered
+	return self.albedo.Color(record.point), scattered
 }
 
 // Metal =====================================================================
 
 type MetalMaterial struct {
-	albedo    Vector3
+	albedo    Texture
 	fuzziness float64
 }
 
-func (self *MetalMaterial) Scatter(rng *rand.Rand, ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray) {
+func (self *MetalMaterial) Scatter(rng *rand.Rand, ray *Ray, record *HitRecord) (attenuation *Color, scattered *Ray) {
 	reflected := reflect(ray.Direction, record.normal)
 	if reflected.Dot(record.normal) <= 0.0 {
 		return nil, nil
 	}
 	scattered = NewRay(record.point, reflected.Add(randomVectorInUnitSphere(rng).Scale(self.fuzziness)))
-	return &self.albedo, scattered
+	return self.albedo.Color(record.point), scattered
 }
 
 // Dielectric =====================================================================
@@ -87,7 +87,7 @@ func schlick(cosine float64, refractiveIndex float64) float64 {
 	return r0 + (1-r0)*math.Pow((1.0-cosine), 5.0)
 }
 
-func (self *DielectricMaterial) Scatter(rng *rand.Rand, ray *Ray, record *HitRecord) (attenuation *Vector3, scattered *Ray) {
+func (self *DielectricMaterial) Scatter(rng *rand.Rand, ray *Ray, record *HitRecord) (attenuation *Color, scattered *Ray) {
 	var outNormal *Vector3
 	var niOverNt float64
 	var cosine float64
@@ -116,7 +116,7 @@ func (self *DielectricMaterial) Scatter(rng *rand.Rand, ray *Ray, record *HitRec
 		scattered = NewRay(record.point, reflected)
 	}
 
-	attenuation = UnitVector
+	attenuation = WhiteColor
 
 	return attenuation, scattered
 }

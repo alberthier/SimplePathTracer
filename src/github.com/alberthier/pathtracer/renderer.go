@@ -16,6 +16,8 @@ type Color struct {
 	B float64
 }
 
+var WhiteColor = NewColor(1.0, 1.0, 1.0)
+
 func NewColor(r float64, g float64, b float64) *Color {
 	return &Color{r, g, b}
 }
@@ -102,9 +104,9 @@ func (self *Renderer) Color(rng *rand.Rand, ray *Ray, world *World, depth int) *
 			attenuation, scattered := record.object.GetMaterial().Scatter(rng, ray, &record)
 			if attenuation != nil && scattered != nil {
 				color := self.Color(rng, scattered, world, depth+1)
-				return NewColor(attenuation.X*color.R,
-					attenuation.Y*color.G,
-					attenuation.Z*color.B)
+				return NewColor(attenuation.R*color.R,
+					attenuation.G*color.G,
+					attenuation.B*color.B)
 			}
 		}
 		return NewColor(0.0, 0.0, 0.0)
