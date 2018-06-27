@@ -7,7 +7,7 @@ import (
 type AnimatedValue interface {
 	Update(t float64)
 	Get() float64
-	Clone() AnimatedValue
+	Clone(initialValue float64) AnimatedValue
 }
 
 type AnimatedVector interface {
@@ -33,32 +33,33 @@ func (self *FixedValue) Get() float64 {
 	return self.value
 }
 
-func (self *FixedValue) Clone() AnimatedValue {
+func (self *FixedValue) Clone(initialValue float64) AnimatedValue {
 	return NewFixedValue(self.value)
 }
 
 // SinValue ===========================================
 
 type SinValue struct {
-	value float64
-	scale float64
-	speed float64
+	value        float64
+	initialValue float64
+	scale        float64
+	speed        float64
 }
 
-func NewSinValue(scale float64, speed float64) *SinValue {
-	return &SinValue{0.0, scale, speed}
+func NewSinValue(initialValue float64, scale float64, speed float64) *SinValue {
+	return &SinValue{0.0, initialValue, scale, speed}
 }
 
 func (self *SinValue) Update(t float64) {
-	self.value = self.scale * math.Sin(self.speed*t/100.0)
+	self.value = self.initialValue + self.scale*math.Sin(self.speed*math.Pi*t/180.0)
 }
 
 func (self *SinValue) Get() float64 {
 	return self.value
 }
 
-func (self *SinValue) Clone() AnimatedValue {
-	return NewSinValue(self.scale, self.speed)
+func (self *SinValue) Clone(initialValue float64) AnimatedValue {
+	return NewSinValue(initialValue, self.scale, self.speed)
 }
 
 // FixedVector3 ===========================================
@@ -96,9 +97,9 @@ func NewCircularYPositionVector3(cx float64, cy float64, cz float64, radius floa
 }
 
 func (self *CircularYPositionVector3) Update(t float64) {
-	self.value.X = self.center.X + math.Cos(self.speed*t/100.0)*self.radius
+	self.value.X = self.center.X + math.Cos(self.speed*math.Pi*t/180.0)*self.radius
 	self.value.Y = self.center.Y
-	self.value.Z = self.center.Z + math.Sin(self.speed*t/100.0)*self.radius
+	self.value.Z = self.center.Z + math.Sin(self.speed*math.Pi*t/180.0)*self.radius
 }
 
 func (self *CircularYPositionVector3) Get() *Vector3 {

@@ -2,7 +2,9 @@
     "textures": [
         { "name": "groundColor1",  "type": "static", "color": [0.5, 0.5, 0.5] },
         { "name": "groundColor2",  "type": "static", "color": [0.8, 0.8, 0.0] },
-        { "name": "groundColor",  "type": "checker", "texture1": "groundColor1", "texture2": "groundColor2", "size": 3.0 },
+        { "name": "groundColor3",  "type": "static", "color": [0.4, 0.4, 0.4] },
+        { "name": "groundColor4",  "type": "checker", "texture1": "groundColor3", "texture2": "groundColor1", "size": 9.0 },
+        { "name": "groundColor",  "type": "checker", "texture1": "groundColor2", "texture2": "groundColor4", "size": 3.0 },
         { "name": "mat1Color",  "type": "static", "color": [0.8, 0.3, 0.3] },
         { "name": "mat2Color",  "type": "static", "color": [0.1, 0.2, 0.5] },
         { "name": "mat3Color",  "type": "static", "color": [0.6, 0.2, 0.9] },
@@ -36,8 +38,8 @@
         { "name": "diamond", "type": "dielectric", "param": 2.41 }
     ],
     "animations": [
-        { "name": "camAnim",  "type": "circularPosition", "cx": 0.0, "cy": 5.0, "cz": 0.0, "radius": 15.0, "speed": 10.0 },
-        { "name": "sizeAnim", "type": "sinValue", "scale": 2.0, "speed": 10.0 }
+        { "name": "camAnim",  "type": "circularPosition", "cx": 0.0, "cy": 5.0, "cz": 0.0, "radius": 15.0, "speed": 4.0 },
+        { "name": "sizeAnim", "type": "sinValue", "scale": 1.0, "speed": 4.0 }
     ],
     "scene": {
         "camera": { "position": { "anim": "camAnim" },
@@ -46,7 +48,7 @@
                     "fov": { "value": 30 }, "aperture": { "value": 0.2 } },
         "objects": [
             { "type": "sphere", "position": { "x": -4.0, "y":    1.5, "z":  0.0 }, "radius": { "value":   1.5 }, "material": "glass"  },
-            { "type": "sphere", "position": { "x":  0.0, "y":    1.5, "z":  0.0 }, "radius": { "value":   1.5 }, "material": "mat1"   },
+            { "type": "sphere", "position": { "x":  0.0, "y":    1.5, "z":  0.0 }, "radius": { "value":   1.5, "anim": "sizeAnim"}, "material": "mat1"   },
             { "type": "sphere", "position": { "x":  4.0, "y":    1.5, "z":  0.0 }, "radius": { "value":   1.5 }, "material": "metal1" },
             { "type": "sphere", "position": { "x":  0.0, "y": -1000.0, "z": -1.0 }, "radius": { "value": 1000.0 }, "material": "ground"  },
 

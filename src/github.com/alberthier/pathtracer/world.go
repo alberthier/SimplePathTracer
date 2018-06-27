@@ -79,7 +79,7 @@ type WorldFile struct {
 func (self *World) newAnimatedValue(v *FileValue) AnimatedValue {
 	if len(v.Anim) != 0 {
 		if anim, ok := self.ValueAnimations[v.Anim]; ok {
-			return anim.Clone()
+			return anim.Clone(v.Value)
 		}
 	}
 	return NewFixedValue(v.Value)
@@ -120,7 +120,7 @@ func (self *World) Load(filename string, aspectRatio float64) error {
 			self.VectorAnimations[animData.Name] = NewCircularYPositionVector3(animData.Cx, animData.Cy, animData.Cz, animData.Radius, animData.Speed)
 			break
 		case "sinValue":
-			self.ValueAnimations[animData.Name] = NewSinValue(animData.Scale, animData.Speed)
+			self.ValueAnimations[animData.Name] = NewSinValue(0.0, animData.Scale, animData.Speed)
 			break
 		}
 	}
