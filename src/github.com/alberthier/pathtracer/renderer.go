@@ -1,6 +1,7 @@
 package pathtracer
 
 import (
+	"fmt"
 	"image"
 	"math"
 	"math/rand"
@@ -136,7 +137,7 @@ func (self *Renderer) renderLine(channel chan *PixelColor, world *World, line in
 	channel <- &PixelColor{0, 0, nil}
 }
 
-func (self *Renderer) Render(world *World, t float64) image.Image {
+func (self *Renderer) Render(world *World, t float64, logprefix string) image.Image {
 	maxGoRoutines := runtime.NumCPU()
 	goRoutinesCount := 0
 
@@ -147,6 +148,8 @@ func (self *Renderer) Render(world *World, t float64) image.Image {
 	world.Update(t)
 
 	line := 0
+	totalPixels := float64(self.width * self.height)
+	renderedPixels := 0
 	for line < self.height || goRoutinesCount != 0 {
 		for goRoutinesCount < maxGoRoutines && line < self.height {
 			go self.renderLine(channel, world, line)
@@ -157,12 +160,15 @@ func (self *Renderer) Render(world *World, t float64) image.Image {
 			pix := <-channel
 			if pix.Color != nil {
 				img.Set(pix.X, pix.Y, pix.Color)
+				renderedPixels++
+				fmt.Printf("\r%s%.1f%%", logprefix, 100.0*float64(renderedPixels)/totalPixels)
 			} else {
 				goRoutinesCount--
 				break
 			}
 		}
 	}
+	fmt.Printf("\r%s      \r%sOK\n", logprefix, logprefix)
 
 	return img
 }

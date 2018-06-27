@@ -42,7 +42,8 @@ func main() {
 
 	renderer := pathtracer.NewRenderer(*width, *height, *samples)
 	for t := *startframe; t < (*startframe + *length); t++ {
-		img := renderer.Render(world, float64(t))
+		logprefix := fmt.Sprintf("Frame %d/%d - ", t+1, *length)
+		img := renderer.Render(world, float64(t), logprefix)
 		output, _ := os.Create(fmt.Sprintf("%s%03d.png", *prefix, t))
 		png.Encode(output, img)
 		output.Close()
