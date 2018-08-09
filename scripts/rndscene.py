@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import random
+import math
 
 materials=["ground",
    "mat1",
@@ -29,6 +30,7 @@ def makeball(i, j):
 
 for i in range(-20, 21):
     for j in range(-20, 21):
-        if i < -5 or i > 5 and j < -2 or j > 2:
+        d = math.sqrt(i*i + j*j)
+        if d > 6:
             if random.random() < 0.1:
                 makeball(i, j)
