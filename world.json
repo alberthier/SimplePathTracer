@@ -38,7 +38,7 @@
         { "name": "diamond", "type": "dielectric", "param": 2.41 }
     ],
     "animations": [
-        { "name": "camAnim",  "type": "circularPosition", "cx": 0.0, "cy": 5.0, "cz": 0.0, "radius": 15.0, "speed": 4.0 },
+        { "name": "camAnim",  "type": "circularPosition", "cx": 0.0, "cy": 5.0, "cz": 0.0, "radius": 25.0, "speed": 4.0 },
         { "name": "sizeAnim", "type": "sinValue", "scale": 1.0, "speed": 8.0 }
     ],
     "scene": {
